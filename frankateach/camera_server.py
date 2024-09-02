@@ -56,7 +56,7 @@ def main(host, cam_port, cam_configs):
 
 
 if __name__ == "__main__":
-    cam_serial_nums = ["147322072736", "028522071213", "147322072546", "152222073516"]
+    cam_serial_nums = ["023322061741"]
     main(
         host="localhost",
         cam_port=10005,

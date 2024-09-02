@@ -27,6 +27,7 @@ from frankateach.constants import (
 class DataCollector:
     def __init__(
         self,
+        stop_flag,
         storage_path: str,
         demo_num: int,
         cams=[],  # cam serial numbers
@@ -56,6 +57,9 @@ class DataCollector:
 
         if collect_reskin:
             self.reskin_subscriber = ReskinSensorSubscriber()
+
+        # stop flag
+        self.stop_flag = stop_flag
 
         # Create the storage directory
         self.storage_path = Path(storage_path) / f"demonstration_{demo_num}"
@@ -95,14 +99,12 @@ class DataCollector:
         for thread in self.threads:
             thread.start()
 
-        try:
-            while True:
-                pass
-        except KeyboardInterrupt:
-            print("Stopping the data collection...")
-            self.run_event.clear()
-            for thread in self.threads:
-                thread.join()
+        while not self.stop_flag.value:
+            time.sleep(0.01)
+        print("Stopping the data collection...")
+        self.run_event.clear()
+        for thread in self.threads:
+            thread.join()
 
     def save_rgb(self, cam_idx, cam_config):
         notify_component_start(component_name="RGB Image Collector")
@@ -127,6 +129,7 @@ class DataCollector:
             record_start_time=time.time(),
         )
         num_image_frames = 0
+        print("Starting to record images from port:", CAM_PORT+cam_idx)
 
         while self.run_event.is_set():
             rgb_image, timestamp = self.image_subscribers[cam_idx].recv_rgb_image()
